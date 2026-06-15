@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foodie Express</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav>
+    <div class="logo">
+        🍛 Foodie Express
+    </div>
+
+    <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Menu</a></li>
+        <li><a href="#">Offers</a></li>
+        <li><a href="#">Contact</a></li>
+    </ul>
+
+    <div class="nav-right">
+        <button class="cart-btn" onclick="toggleCart()">
+            🛒 Cart <span id="cartCount">0</span>
+        </button>
+        <div id="authBtns">
+            <button class="login-btn" onclick="showLogin()">Login</button>
+            <button class="signup-btn" onclick="showSignup()">Sign Up</button>
+        </div>
+        <div id="userInfo" style="display:none;">
+            <span class="user-greeting" id="userGreeting"></span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <button class="manage-menu-btn" onclick="showAdminPanel()">📋 Manage Menu</button>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>India's Favourite Food Delivery App</h1>
+        <p>
+            Order Biryani, Butter Chicken,
+            Paneer Tikka, Dosa, Pav Bhaji
+            and many more delicious Indian dishes.
+        </p>
+        <div class="search-box">
+            <input
+            type="text"
+            id="searchInput"
+            placeholder="Search Indian Food..."
+            >
+            <button onclick="searchFood()">Search</button>
+        </div>
+    </div>
+
+    <div class="hero-image">
+        <img
+        src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900"
+        alt="Indian Food"
+        >
+    </div>
+</section>
+
+<!-- Categories -->
+<section class="categories">
+    <h2>Popular Categories</h2>
+    <div class="category-container">
+        <div class="category-card" onclick="filterByCategory('Biryani')">
+            <span class="cat-emoji">🍛</span>
+            <h3>Biryani</h3>
+            <span class="cat-count" id="count-Biryani">0</span>
+        </div>
+        <div class="category-card" onclick="filterByCategory('North Indian')">
+            <span class="cat-emoji">🍗</span>
+            <h3>North Indian</h3>
+            <span class="cat-count" id="count-North Indian">0</span>
+        </div>
+        <div class="category-card" onclick="filterByCategory('South Indian')">
+            <span class="cat-emoji">🥞</span>
+            <h3>South Indian</h3>
+            <span class="cat-count" id="count-South Indian">0</span>
+        </div>
+        <div class="category-card" onclick="filterByCategory('Street Food')">
+            <span class="cat-emoji">🥘</span>
+            <h3>Street Food</h3>
+            <span class="cat-count" id="count-Street Food">0</span>
+        </div>
+    </div>
+</section>
+
+<!-- Food Cards -->
+<section class="foods">
+    <div class="foods-header">
+        <h2 id="foodSectionTitle">Popular Indian Foods</h2>
+        <button class="clear-filter-btn" id="clearFilterBtn" onclick="clearCategoryFilter()" style="display:none;">✕ Clear Filter</button>
+    </div>
+    <div class="food-container" id="foodContainer"></div>
+</section>
+
+<!-- ====== Cart Sidebar ====== -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+        <h2>Your Cart</h2>
+        <button class="cart-close" onclick="toggleCart()">✕</button>
+    </div>
+
+    <div class="cart-items" id="cartItems">
+        <p class="cart-empty">Your cart is empty</p>
+    </div>
+
+    <div class="cart-footer" id="cartFooter" style="display:none;">
+        <div class="cart-total">
+            <span>Total:</span>
+            <span id="cartTotal">₹0</span>
+        </div>
+        <button class="checkout-btn" onclick="showCheckout()">Proceed to Checkout</button>
+    </div>
+</div>
+
+<!-- ====== Checkout Modal ====== -->
+<div class="modal-overlay" id="checkoutOverlay" onclick="hideCheckout()"></div>
+<div class="modal" id="checkoutModal">
+    <div class="modal-header">
+        <h2>Checkout</h2>
+        <button class="modal-close" onclick="hideCheckout()">✕</button>
+    </div>
+    <form id="checkoutForm" onsubmit="placeOrder(event)">
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="custName" required placeholder="Your name">
+        </div>
+        <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" id="custPhone" required placeholder="+91 98765 43210">
+        </div>
+        <div class="form-group">
+            <label>Delivery Address</label>
+            <textarea id="custAddress" required placeholder="House / Flat, Street, Area, City"></textarea>
+        </div>
+
+        <div class="order-summary">
+            <h3>Order Summary</h3>
+            <div id="checkoutItems"></div>
+            <div class="order-total">
+                <span>Total:</span>
+                <span id="checkoutTotal">₹0</span>
+            </div>
+        </div>
+
+        <button type="submit" class="place-order-btn">Place Order</button>
+    </form>
+</div>
+
+<!-- ====== Login Modal ====== -->
+<div class="modal-overlay" id="loginOverlay" onclick="hideLogin()"></div>
+<div class="modal auth-modal" id="loginModal">
+    <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+        <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+    <form id="loginForm" onsubmit="login(event)">
+        <h2>Welcome Back</h2>
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="loginUsername" required placeholder="Enter your username">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword" required placeholder="Enter your password">
+        </div>
+        <p class="auth-error" id="loginError"></p>
+        <button type="submit" class="auth-submit-btn">Login</button>
+        <p class="auth-switch">Don't have an account? <a href="#" onclick="showSignup();return false;">Sign Up</a></p>
+    </form>
+</div>
+
+<!-- ====== Signup Modal ====== -->
+<div class="modal-overlay" id="signupOverlay" onclick="hideSignup()"></div>
+<div class="modal auth-modal" id="signupModal">
+    <div class="auth-tabs">
+        <button class="auth-tab" onclick="switchAuthTab('login')">Login</button>
+        <button class="auth-tab active" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+    <form id="signupForm" onsubmit="signup(event)">
+        <h2>Create Account</h2>
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="signupUsername" required placeholder="Choose a username">
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="signupEmail" required placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="signupPassword" required placeholder="Create a password (min 6 chars)" minlength="6">
+        </div>
+        <p class="auth-error" id="signupError"></p>
+        <button type="submit" class="auth-submit-btn">Sign Up</button>
+        <p class="auth-switch">Already have an account? <a href="#" onclick="showLogin();return false;">Login</a></p>
+    </form>
+</div>
+
+<!-- ====== Order Confirmation Toast ====== -->
+<div id="toast" class="toast"></div>
+
+<!-- ====== Order History Link ====== -->
+<div class="orders-link">
+    <button onclick="showOrders()">📋 View Orders</button>
+</div>
+
+<!-- ====== Orders Modal ====== -->
+<div class="modal-overlay" id="ordersOverlay" onclick="hideOrders()"></div>
+<div class="modal orders-modal" id="ordersModal">
+    <div class="modal-header">
+        <h2>Your Orders</h2>
+        <button class="modal-close" onclick="hideOrders()">✕</button>
+    </div>
+    <div id="ordersList">
+        <p>Loading orders...</p>
+    </div>
+</div>
+
+<!-- ====== Admin Modal (Manage Menu) ====== -->
+<div class="modal-overlay" id="adminOverlay" onclick="hideAdminPanel()"></div>
+<div class="modal" id="adminModal">
+    <div class="modal-header">
+        <h2>📋 Manage Menu</h2>
+        <button class="modal-close" onclick="hideAdminPanel()">✕</button>
+    </div>
+
+    <button class="admin-form-toggle" id="adminToggleBtn" onclick="toggleAdminForm()">+ Add New Food Item</button>
+
+    <!-- Add / Edit Form -->
+    <div class="admin-form" id="adminForm" style="display:none;">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Food Name</label>
+                <input type="text" id="adminFoodName" placeholder="e.g. Chicken Curry">
+            </div>
+            <div class="form-group">
+                <label>Price (₹)</label>
+                <input type="number" id="adminFoodPrice" placeholder="e.g. 299" min="0" step="1">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Category</label>
+                <select id="adminFoodCategory">
+                    <option value="Biryani">Biryani</option>
+                    <option value="North Indian">North Indian</option>
+                    <option value="South Indian">South Indian</option>
+                    <option value="Street Food">Street Food</option>
+                    <option value="Desserts">Desserts</option>
+                    <option value="Beverages">Beverages</option>
+                    <option value="General">General</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Image URL</label>
+                <input type="text" id="adminFoodImage" placeholder="https://...">
+            </div>
+        </div>
+        <div class="admin-form-actions">
+            <button class="admin-save-btn" id="adminSaveBtn" onclick="saveFoodItem()">💾 Save Food</button>
+            <button class="admin-cancel-btn" onclick="cancelAdminForm()">Cancel</button>
+        </div>
+        <input type="hidden" id="adminEditId" value="">
+    </div>
+
+    <div class="admin-foods-list" id="adminFoodsList">
+        <p>Loading menu items...</p>
+    </div>
+</div>
+
+<script>
+// ───── API Base URL ─────
+const API = "http://127.0.0.1:8000";
+
+let foods = [];
+let activeCategory = null;
+let authToken = localStorage.getItem("authToken") || null;
+let currentUser = null;
+
+// ───── Auth State ─────
+function updateAuthUI() {
+    const authBtns = document.getElementById("authBtns");
+    const userInfo = document.getElementById("userInfo");
+    const greeting = document.getElementById("userGreeting");
+
+    if (authToken && currentUser) {
+        authBtns.style.display = "none";
+        userInfo.style.display = "flex";
+        greeting.textContent = `👋 ${currentUser.username}`;
+    } else {
+        authBtns.style.display = "flex";
+        userInfo.style.display = "none";
+    }
+}
+
+async function checkAuth() {
+    if (!authToken) return;
+    try {
+        const res = await fetch(`${API}/auth/me`, {
+            headers: { "Authorization": `Bearer ${authToken}` }
+        });
+        if (res.ok) {
+            currentUser = await res.json();
+            updateAuthUI();
+        } else {
+            localStorage.removeItem("authToken");
+            authToken = null;
+            currentUser = null;
+            updateAuthUI();
+        }
+    } catch {
+        // Backend might be down
+    }
+}
+
+// ───── Login ─────
+function showLogin() {
+    hideSignup();
+    document.getElementById("loginOverlay").classList.add("active");
+    document.getElementById("loginModal").classList.add("active");
+    document.getElementById("loginError").textContent = "";
+}
+
+function hideLogin() {
+    document.getElementById("loginOverlay").classList.remove("active");
+    document.getElementById("loginModal").classList.remove("active");
+}
+
+async function login(e) {
+    e.preventDefault();
+    const username = document.getElementById("loginUsername").value;
+    const password = document.getElementById("loginPassword").value;
+    const errorEl = document.getElementById("loginError");
+
+    try {
+        const res = await fetch(`${API}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            errorEl.textContent = data.detail || "Login failed";
+            return;
+        }
+        authToken = data.access_token;
+        currentUser = { username: data.username, email: data.email, id: data.user_id };
+        localStorage.setItem("authToken", authToken);
+        updateAuthUI();
+        hideLogin();
+        showToast(`✅ Welcome back, ${data.username}!`);
+        document.getElementById("loginForm").reset();
+    } catch {
+        errorEl.textContent = "Could not connect to server";
+    }
+}
+
+// ───── Signup ─────
+function showSignup() {
+    hideLogin();
+    document.getElementById("signupOverlay").classList.add("active");
+    document.getElementById("signupModal").classList.add("active");
+    document.getElementById("signupError").textContent = "";
+}
+
+function hideSignup() {
+    document.getElementById("signupOverlay").classList.remove("active");
+    document.getElementById("signupModal").classList.remove("active");
+}
+
+async function signup(e) {
+    e.preventDefault();
+    const username = document.getElementById("signupUsername").value;
+    const email = document.getElementById("signupEmail").value;
+    const password = document.getElementById("signupPassword").value;
+    const errorEl = document.getElementById("signupError");
+
+    if (password.length < 6) {
+        errorEl.textContent = "Password must be at least 6 characters";
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/auth/signup`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            errorEl.textContent = data.detail || "Signup failed";
+            return;
+        }
+        authToken = data.access_token;
+        currentUser = { username: data.username, email: data.email, id: data.user_id };
+        localStorage.setItem("authToken", authToken);
+        updateAuthUI();
+        hideSignup();
+        showToast(`✅ Account created! Welcome, ${data.username}!`);
+        document.getElementById("signupForm").reset();
+    } catch {
+        errorEl.textContent = "Could not connect to server";
+    }
+}
+
+function switchAuthTab(tab) {
+    if (tab === 'login') {
+        hideSignup();
+        showLogin();
+    } else {
+        hideLogin();
+        showSignup();
+    }
+}
+
+function logout() {
+    authToken = null;
+    currentUser = null;
+    localStorage.removeItem("authToken");
+    updateAuthUI();
+    showToast("👋 Logged out successfully");
+}
+
+// ───── Load Foods from API ─────
+async function loadFoods() {
+    try {
+        const res = await fetch(`${API}/foods`);
+        if (res.ok) {
+            foods = await res.json();
+            if (foods.length === 0) {
+                await seedFoods();
+                const res2 = await fetch(`${API}/foods`);
+                foods = await res2.json();
+            }
+            displayFoods(foods);
+            updateCategoryCounts();
+            return;
+        }
+    } catch (e) {
+        console.warn("Backend not running");
+    }
+    // If API fails, show empty state instead of fake data
+    foods = [];
+    displayFoods(foods);
+    updateCategoryCounts();
+    document.getElementById("foodContainer").innerHTML = '<p class="no-results">⚠️ Backend server not running. Please start it to see the menu.</p>';
+}
+
+async function seedFoods() {
+    const defaultFoods = [
+        // Biryani
+        { name: "Hyderabadi Biryani", price: 349, image: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=400", category: "Biryani" },
+        { name: "Chicken Dum Biryani", price: 329, image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400", category: "Biryani" },
+        { name: "Mutton Biryani", price: 449, image: "https://images.unsplash.com/photo-1645112411341-6c4fd023714a?w=400", category: "Biryani" },
+        { name: "Vegetable Biryani", price: 249, image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400", category: "Biryani" },
+        // North Indian
+        { name: "Butter Chicken", price: 349, image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400", category: "North Indian" },
+        { name: "Paneer Butter Masala", price: 279, image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400", category: "North Indian" },
+        { name: "Dal Makhani", price: 229, image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400", category: "North Indian" },
+        { name: "Chole Bhature", price: 199, image: "https://images.unsplash.com/photo-1626132647523-66f5bf380027?w=400", category: "North Indian" },
+        // South Indian
+        { name: "Masala Dosa", price: 199, image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400", category: "South Indian" },
+        { name: "Idli Sambhar", price: 129, image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400", category: "South Indian" },
+        { name: "Medu Vada", price: 99, image: "https://images.unsplash.com/photo-1626132647523-66f5bf380027?w=400", category: "South Indian" },
+        { name: "Rava Dosa", price: 179, image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400", category: "South Indian" },
+        // Street Food
+        { name: "Pav Bhaji", price: 179, image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400", category: "Street Food" },
+        { name: "Vada Pav", price: 79, image: "https://images.unsplash.com/photo-1677432413368-53f6d55fd8cb?w=400", category: "Street Food" },
+        { name: "Samosa", price: 49, image: "https://images.unsplash.com/photo-1601050690117-94f5f6fae2f5?w=400", category: "Street Food" },
+        { name: "Pani Puri", price: 59, image: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400", category: "Street Food" },
+    ];
+    for (const f of defaultFoods) {
+        const params = new URLSearchParams({ name: f.name, price: f.price, image: f.image, category: f.category });
+        await fetch(`${API}/add-food?${params}`, { method: "POST" });
+    }
+}
+
+
+// ───── Category Filtering ─────
+function filterByCategory(category) {
+    activeCategory = category;
+    const filtered = foods.filter(f => f.category === category);
+    displayFoods(filtered);
+
+    document.getElementById("foodSectionTitle").textContent = `${category} Dishes`;
+    document.getElementById("clearFilterBtn").style.display = "inline-block";
+
+    document.querySelectorAll(".category-card").forEach(c => c.classList.remove("active"));
+    document.querySelectorAll(".category-card").forEach(c => {
+        if (c.querySelector("h3").textContent === category) {
+            c.classList.add("active");
+        }
+    });
+
+    document.getElementById("searchInput").value = "";
+}
+
+function clearCategoryFilter() {
+    activeCategory = null;
+    displayFoods(foods);
+
+    document.getElementById("foodSectionTitle").textContent = "Popular Indian Foods";
+    document.getElementById("clearFilterBtn").style.display = "none";
+
+    document.querySelectorAll(".category-card").forEach(c => c.classList.remove("active"));
+}
+
+function updateCategoryCounts() {
+    const counts = {};
+    foods.forEach(f => {
+        counts[f.category] = (counts[f.category] || 0) + 1;
+    });
+    document.querySelectorAll(".category-card").forEach(card => {
+        const title = card.querySelector("h3").textContent;
+        const countEl = card.querySelector(".cat-count");
+        if (countEl) {
+            countEl.textContent = counts[title] || 0;
+        }
+    });
+}
+
+// ───── Display Foods ─────
+function displayFoods(foodList) {
+    const container = document.getElementById("foodContainer");
+    container.innerHTML = "";
+    if (foodList.length === 0) {
+        container.innerHTML = '<p class="no-results">No dishes found in this category. Try another one!</p>';
+        return;
+    }
+    foodList.forEach(food => {
+        container.innerHTML += `
+        <div class="food-card">
+            <span class="food-category-tag">${food.category}</span>
+            <img src="${food.image}" alt="${food.name}" loading="lazy">
+            <div class="food-info">
+                <h3>${food.name}</h3>
+                <p>₹${food.price}</p>
+                <button onclick="addToCart(${food.id}, '${food.name.replace(/'/g, "\\'")}', ${food.price}, '${food.image}')">
+                    Add to Cart
+                </button>
+            </div>
+        </div>`;
+    });
+}
+
+// ───── Search ─────
+function searchFood() {
+    const value = document.getElementById("searchInput").value.toLowerCase();
+    let source = activeCategory ? foods.filter(f => f.category === activeCategory) : foods;
+    const filtered = source.filter(f => f.name.toLowerCase().includes(value));
+    displayFoods(filtered);
+
+    if (activeCategory) {
+        document.getElementById("foodSectionTitle").textContent = `${activeCategory} Dishes`;
+    } else {
+        document.getElementById("foodSectionTitle").textContent = value ? `Search Results` : "Popular Indian Foods";
+    }
+}
+
+// ───── Cart State ─────
+let cart = [];
+let cartTotal = 0;
+
+// ───── Toggle Cart Sidebar ─────
+function toggleCart() {
+    document.getElementById("cartOverlay").classList.toggle("active");
+    document.getElementById("cartSidebar").classList.toggle("active");
+    loadCart();
+}
+
+function authHeaders() {
+    const headers = { "Content-Type": "application/json" };
+    if (authToken) {
+        headers["Authorization"] = `Bearer ${authToken}`;
+    }
+    return headers;
+}
+
+// ───── Add to Cart ─────
+async function addToCart(foodId, name, price, image) {
+    if (!authToken) {
+        showToast("🔒 Please login to add items to cart");
+        showLogin();
+        return;
+    }
+    try {
+        const res = await fetch(`${API}/cart/add`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ food_id: foodId, name, price, image }),
+        });
+        if (!res.ok && res.status === 401) {
+            showToast("🔒 Session expired. Please login again");
+            logout();
+            showLogin();
+            return;
+        }
+    } catch (e) {
+        showToast("⚠️ Could not add to cart");
+        return;
+    }
+    showToast(`✅ ${name} added to cart!`);
+    updateCartCount();
+    if (document.getElementById("cartSidebar").classList.contains("active")) {
+        loadCart();
+    }
+}
+
+// ───── Load Cart ─────
+async function loadCart() {
+    if (!authToken) {
+        cart = [];
+        cartTotal = 0;
+        renderCart();
+        return;
+    }
+    try {
+        const res = await fetch(`${API}/cart`, { headers: authHeaders() });
+        if (!res.ok) { cart = []; cartTotal = 0; renderCart(); return; }
+        const data = await res.json();
+        cart = data.items;
+        cartTotal = data.total;
+    } catch (e) {
+        cart = [];
+        cartTotal = 0;
+    }
+    renderCart();
+}
+
+// ───── Render Cart ─────
+function renderCart() {
+    const container = document.getElementById("cartItems");
+    const footer = document.getElementById("cartFooter");
+
+    if (cart.length === 0) {
+        container.innerHTML = '<p class="cart-empty">Your cart is empty</p>';
+        footer.style.display = "none";
+        return;
+    }
+
+    footer.style.display = "block";
+    container.innerHTML = cart.map(item => `
+        <div class="cart-item">
+            <img src="${item.image}" alt="${item.name}">
+            <div class="cart-item-info">
+                <h4>${item.name}</h4>
+                <p>₹${item.price}</p>
+                <div class="cart-qty">
+                    <button onclick="updateQty(${item.id}, -1)">−</button>
+                    <span>${item.quantity}</span>
+                    <button onclick="updateQty(${item.id}, 1)">+</button>
+                </div>
+            </div>
+            <button class="cart-remove" onclick="removeItem(${item.id})">🗑️</button>
+        </div>
+    `).join("");
+
+    document.getElementById("cartTotal").textContent = `₹${cartTotal}`;
+}
+
+async function updateQty(itemId, delta) {
+    if (!authToken) return;
+    const item = cart.find(i => i.id === itemId);
+    if (!item) return;
+    const newQty = item.quantity + delta;
+
+    try {
+        if (newQty <= 0) {
+            await fetch(`${API}/cart/remove/${itemId}`, { method: "DELETE", headers: authHeaders() });
+        } else {
+            await fetch(`${API}/cart/update/${itemId}`, {
+                method: "PUT",
+                headers: authHeaders(),
+                body: JSON.stringify({ quantity: newQty }),
+            });
+        }
+    } catch (e) {}
+
+    loadCart();
+    updateCartCount();
+}
+
+async function removeItem(itemId) {
+    if (!authToken) return;
+    try {
+        await fetch(`${API}/cart/remove/${itemId}`, { method: "DELETE", headers: authHeaders() });
+    } catch (e) {}
+    loadCart();
+    updateCartCount();
+}
+
+async function updateCartCount() {
+    if (!authToken) { document.getElementById("cartCount").textContent = "0"; return; }
+    try {
+        const res = await fetch(`${API}/cart`, { headers: authHeaders() });
+        if (!res.ok) { document.getElementById("cartCount").textContent = "0"; return; }
+        const data = await res.json();
+        const count = data.items.reduce((sum, i) => sum + i.quantity, 0);
+        document.getElementById("cartCount").textContent = count;
+    } catch (e) {
+        document.getElementById("cartCount").textContent = "0";
+    }
+}
+
+// ───── Show Checkout Modal ─────
+function showCheckout() {
+    if (cart.length === 0) return;
+    document.getElementById("checkoutOverlay").classList.add("active");
+    document.getElementById("checkoutModal").classList.add("active");
+
+    const container = document.getElementById("checkoutItems");
+    container.innerHTML = cart.map(item => `
+        <div class="checkout-item">
+            <span>${item.name} × ${item.quantity}</span>
+            <span>₹${item.price * item.quantity}</span>
+        </div>
+    `).join("");
+    document.getElementById("checkoutTotal").textContent = `₹${cartTotal}`;
+}
+
+function hideCheckout() {
+    document.getElementById("checkoutOverlay").classList.remove("active");
+    document.getElementById("checkoutModal").classList.remove("active");
+}
+
+async function placeOrder(e) {
+    e.preventDefault();
+    if (!authToken) {
+        showToast("🔒 Please login to place an order");
+        showLogin();
+        return;
+    }
+
+    const orderData = {
+        items: cart,
+        total: cartTotal,
+        customer_name: document.getElementById("custName").value,
+        phone: document.getElementById("custPhone").value,
+        address: document.getElementById("custAddress").value,
+    };
+
+    try {
+        const res = await fetch(`${API}/orders`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(orderData),
+        });
+        if (!res.ok) {
+            showToast("⚠️ Could not place order. Please login again");
+            return;
+        }
+        const result = await res.json();
+        showToast(`🎉 Order #${result.order_id} placed! 🎉`);
+    } catch (e) {
+        showToast("⚠️ Could not place order");
+        return;
+    }
+
+    hideCheckout();
+    document.getElementById("checkoutForm").reset();
+    cart = [];
+    cartTotal = 0;
+    renderCart();
+    updateCartCount();
+}
+
+async function showOrders() {
+    if (!authToken) {
+        showToast("🔒 Please login to view your orders");
+        showLogin();
+        return;
+    }
+    document.getElementById("ordersOverlay").classList.add("active");
+    document.getElementById("ordersModal").classList.add("active");
+    const container = document.getElementById("ordersList");
+
+    try {
+        const res = await fetch(`${API}/orders`, { headers: authHeaders() });
+        if (!res.ok) {
+            container.innerHTML = "<p>Could not load orders. Please login again.</p>";
+            return;
+        }
+        const orders = await res.json();
+
+        if (orders.length === 0) {
+            container.innerHTML = "<p>No orders yet. Order some delicious food! 🍛</p>";
+            return;
+        }
+
+        container.innerHTML = orders.map(order => `
+            <div class="order-card">
+                <div class="order-header">
+                    <strong>Order #${order.id}</strong>
+                    <span class="order-status ${order.status}">${order.status}</span>
+                </div>
+                <p class="order-date">📅 ${new Date(order.created_at).toLocaleString()}</p>
+                <p class="order-items">${order.items.map(i => `${i.name} × ${i.quantity}`).join(", ")}</p>
+                <p class="order-name">👤 ${order.customer_name} · 📞 ${order.phone}</p>
+                <p class="order-addr">📍 ${order.address}</p>
+                <p class="order-total-display"><strong>Total: ₹${order.total}</strong></p>
+            </div>
+        `).join("");
+    } catch (e) {
+        container.innerHTML = "<p>Could not load orders. Make sure the server is running.</p>";
+    }
+}
+
+function hideOrders() {
+    document.getElementById("ordersOverlay").classList.remove("active");
+    document.getElementById("ordersModal").classList.remove("active");
+}
+
+function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+}
+
+// ───── Admin Panel (Manage Menu) ─────
+
+function showAdminPanel() {
+    document.getElementById("adminOverlay").classList.add("active");
+    document.getElementById("adminModal").classList.add("active");
+    cancelAdminForm();
+    loadAdminFoods();
+}
+
+function hideAdminPanel() {
+    document.getElementById("adminOverlay").classList.remove("active");
+    document.getElementById("adminModal").classList.remove("active");
+    cancelAdminForm();
+}
+
+function toggleAdminForm() {
+    const form = document.getElementById("adminForm");
+    const btn = document.getElementById("adminToggleBtn");
+    if (form.style.display === "block") {
+        form.style.display = "none";
+        btn.textContent = "+ Add New Food Item";
+    } else {
+        form.style.display = "block";
+        btn.textContent = "− Cancel";
+        document.getElementById("adminEditId").value = "";
+        document.getElementById("adminFoodName").value = "";
+        document.getElementById("adminFoodPrice").value = "";
+        document.getElementById("adminFoodCategory").value = "General";
+        document.getElementById("adminFoodImage").value = "";
+        document.getElementById("adminSaveBtn").textContent = "💾 Save Food";
+    }
+}
+
+function cancelAdminForm() {
+    document.getElementById("adminForm").style.display = "none";
+    document.getElementById("adminToggleBtn").textContent = "+ Add New Food Item";
+    document.getElementById("adminEditId").value = "";
+}
+
+async function loadAdminFoods() {
+    const container = document.getElementById("adminFoodsList");
+    try {
+        const res = await fetch(`${API}/foods`);
+        const items = await res.json();
+        if (items.length === 0) {
+            container.innerHTML = "<p>No food items yet. Click '+ Add New Food Item' to add one!</p>";
+            return;
+        }
+        container.innerHTML = items.map(food => `
+            <div class="admin-food-item">
+                <div class="af-info">
+                    <h4>${food.name}</h4>
+                    <p>₹${food.price} <span class="af-category">${food.category}</span></p>
+                </div>
+                <div class="af-actions">
+                    <button class="af-edit-btn" onclick="editFoodItem(${food.id}, '${food.name.replace(/'/g, "\\'")}', ${food.price}, '${food.category}', '${food.image.replace(/'/g, "\\'")}')">✏️ Edit</button>
+                    <button class="af-delete-btn" onclick="deleteFoodItem(${food.id}, '${food.name.replace(/'/g, "\\'")}')">🗑️ Delete</button>
+                </div>
+            </div>
+        `).join("");
+    } catch (e) {
+        container.innerHTML = "<p>⚠️ Could not load menu. Make sure the server is running.</p>";
+    }
+}
+
+function editFoodItem(id, name, price, category, image) {
+    const form = document.getElementById("adminForm");
+    const btn = document.getElementById("adminToggleBtn");
+    form.style.display = "block";
+    btn.textContent = "− Cancel";
+
+    document.getElementById("adminEditId").value = id;
+    document.getElementById("adminFoodName").value = name;
+    document.getElementById("adminFoodPrice").value = price;
+    document.getElementById("adminFoodCategory").value = category;
+    document.getElementById("adminFoodImage").value = image;
+    document.getElementById("adminSaveBtn").textContent = "✏️ Update Food";
+}
+
+async function refreshFoodsFromAPI() {
+    try {
+        const res = await fetch(`${API}/foods`);
+        if (res.ok) {
+            foods = await res.json();
+            displayFoods(foods);
+            updateCategoryCounts();
+            return true;
+        }
+    } catch (e) {}
+    return false;
+}
+
+async function saveFoodItem() {
+    const id = document.getElementById("adminEditId").value;
+    const name = document.getElementById("adminFoodName").value.trim();
+    const price = document.getElementById("adminFoodPrice").value.trim();
+    const category = document.getElementById("adminFoodCategory").value;
+    const image = document.getElementById("adminFoodImage").value.trim();
+
+    if (!name || !price) {
+        showToast("⚠️ Please fill in at least the name and price");
+        return;
+    }
+
+    const data = { name, price: parseFloat(price), category, image: image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" };
+
+    try {
+        if (id) {
+            // Update existing
+            const res = await fetch(`${API}/admin/foods/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+            if (!res.ok) throw new Error("Update failed");
+            showToast(`✅ ${name} updated!`);
+        } else {
+            // Create new
+            const res = await fetch(`${API}/admin/foods`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+            if (!res.ok) throw new Error("Create failed");
+            showToast(`✅ ${name} added to menu!`);
+        }
+    } catch (e) {
+        showToast("⚠️ Could not save food item");
+        return;
+    }
+
+    cancelAdminForm();
+    loadAdminFoods();
+    // Directly refresh from API (avoids fallback data bug)
+    await refreshFoodsFromAPI();
+    updateCartCount();
+}
+
+async function deleteFoodItem(id, name) {
+    if (!confirm(`Delete "${name}" from the menu? This cannot be undone.`)) return;
+
+    try {
+        const res = await fetch(`${API}/admin/foods/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Delete failed");
+        showToast(`🗑️ ${name} deleted from menu`);
+    } catch (e) {
+        showToast("⚠️ Could not delete food item");
+        return;
+    }
+
+    loadAdminFoods();
+    // Directly refresh from API (avoids fallback data bug)
+    await refreshFoodsFromAPI();
+    updateCartCount();
+}
+
+// ───── Init ─────
+(async function init() {
+    await checkAuth();
+    loadFoods();
+    updateCartCount();
+    // Refresh auth on tab focus
+    window.addEventListener("focus", () => {
+        if (authToken) checkAuth();
+    });
+})();
+</script>
+
+</body>
+</html>
